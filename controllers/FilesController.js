@@ -84,13 +84,20 @@ class FilesController {
 
     const fileId = req.params.id;
     const file = await dbClient.db.collection('files').findOne({
-      _id: ObjectId(fileId),
-      userId: ObjectId(userId),
+      _id: ObjectID(fileId),
+      userId: ObjectID(userId),
     });
 
     if (!file) return res.status(404).json({ error: 'Not found' });
 
-    return res.status(200).json(file);
+    return res.status(200).json({
+      id: file._id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: file.isPublic,
+      parentId: file.parentId,
+    });
   }
 
   static async getIndex(req, res) {
@@ -105,14 +112,26 @@ class FilesController {
     const pageSize = 20;
 
     const pipeline = [
-      { $match: { userId: ObjectId(userId), parentId } },
+      { 
+        $match: { 
+          userId: ObjectID(userId), 
+          parentId: parentId === '0' ? parentId : ObjectID(parentId)
+        } 
+      },
       { $skip: page * pageSize },
       { $limit: pageSize },
     ];
 
     const files = await dbClient.db.collection('files').aggregate(pipeline).toArray();
 
-    return res.status(200).json(files);
+    return res.status(200).json(files.map(file => ({
+      id: file._id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: file.isPublic,
+      parentId: file.parentId,
+    })));
   }
 }
 

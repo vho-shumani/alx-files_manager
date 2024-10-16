@@ -1,6 +1,6 @@
 import sha1 from 'sha1';
 import { ObjectID } from 'mongodb';
-import dbClient from '../utils/db';
+import dbClient from '../utils/db.js';
 
 class UsersController {
   static async postNew(req, res) {
@@ -9,7 +9,6 @@ class UsersController {
     if (!email) {
       return res.status(400).json({ error: 'Missing email' });
     }
-
     if (!password) {
       return res.status(400).json({ error: 'Missing password' });
     }

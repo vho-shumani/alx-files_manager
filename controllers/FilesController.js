@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ObjectID } from 'mongodb';
+import mime from 'mime-types';
 import fs from 'fs';
 import path from 'path';
 import redisClient from '../utils/redis';
@@ -19,7 +20,9 @@ class FilesController {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const { name, type, parentId = 0, isPublic = false, data } = req.body;
+    const {
+      name, type, parentId = 0, isPublic = false, data,
+    } = req.body;
 
     if (!name) {
       return res.status(400).json({ error: 'Missing name' });
@@ -112,11 +115,11 @@ class FilesController {
     const pageSize = 20;
 
     const pipeline = [
-      { 
-        $match: { 
-          userId: ObjectID(userId), 
-          parentId: parentId === '0' ? parentId : ObjectID(parentId)
-        } 
+      {
+        $match: {
+          userId: ObjectID(userId),
+          parentId: parentId === '0' ? parentId : ObjectID(parentId),
+        },
       },
       { $skip: page * pageSize },
       { $limit: pageSize },
@@ -124,7 +127,7 @@ class FilesController {
 
     const files = await dbClient.db.collection('files').aggregate(pipeline).toArray();
 
-    return res.status(200).json(files.map(file => ({
+    return res.status(200).json(files.map((file) => ({
       id: file._id,
       userId: file.userId,
       name: file.name,
@@ -151,7 +154,7 @@ class FilesController {
 
     await dbClient.db.collection('files').updateOne(
       { _id: ObjectID(fileId) },
-      { $set: { isPublic: true } }
+      { $set: { isPublic: true } },
     );
 
     const updatedFile = await dbClient.db.collection('files').findOne({
@@ -185,7 +188,7 @@ class FilesController {
 
     await dbClient.db.collection('files').updateOne(
       { _id: ObjectID(fileId) },
-      { $set: { isPublic: false } }
+      { $set: { isPublic: false } },
     );
 
     const updatedFile = await dbClient.db.collection('files').findOne({
